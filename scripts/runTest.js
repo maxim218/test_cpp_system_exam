@@ -15,6 +15,7 @@ function startConsole(cmd, callbackGood, callbackBad) {
 }
 
 function oneSpace(s) {
+    s = s.split("\u0000").join("");
     s = s.trim();
     return s.replace(/\s+/g, ' ');
 }
