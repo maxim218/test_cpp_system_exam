@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset = "UTF-8">
+    <title>Экзамен</title>
+    <style>
+        body {
+            padding: 10px;
+            font-family: Geneva, Arial, Helvetica, sans-serif;
+            color: black;
+            background: #CCCCCC;
+            font-size: 20px;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+        }
+
+        .field {
+            font-family: Geneva, Arial, Helvetica, sans-serif;
+            color: black;
+            font-size: 20px;
+            padding: 7px;
+            width: 400px;
+            margin-left: 15px;
+            border: 1px solid blue;
+            outline: none;
+        }
+
+        #codeField {
+            font-family: Geneva, Arial, Helvetica, sans-serif;
+            color: black;
+            font-size: 16px;
+            min-width: 550px;
+            min-height: 80px;
+        }
+
+        .field:focus {
+            border: 1px solid rgba(103, 103, 207, 0.637);
+        }
+
+        .btn {
+            padding: 10px;
+            background: yellow;
+            color: black;
+            cursor: pointer;
+            width: 200px;
+            border-radius: 12px;
+        }
+
+        .btn:hover {
+            background: orange;
+        }     
+    </style>
+</head>
+<body>
+
+<i><h1>Экзамен</h1></i>
+
+<div id = "box1">
+    <h2>Регистрация</h2>
+    <p>
+        ФИО
+        <br>
+        <input id = "fioField" class = "field" maxlength = "50" type = "text" spellcheck = 'false' autocomplete = 'off'>
+    </p>
+    <p>
+        Школа
+        <br>
+        <input id = "schoolField" class = "field" maxlength = "50" type = "text" spellcheck = 'false' autocomplete = 'off'>
+    </p>
+    <div onclick = "addMan()" align = "center" class = "btn">Сохранить</div>
+</div>
+
+<div id = "box2" hidden>
+    <br>
+    <h2>Решение задачи</h2>
+    <p>Текст решения задачи</p>
+    <textarea id = "codeField" spellcheck = 'false' autocomplete = 'off'></textarea>
+    <br>
+    <br>
+    <div onclick = "sendCode()" align = "center" class = "btn">Отправить</div>
+</div>
+
+<script>
+    function getElem(id) {
+        return document.getElementById(id.toString());
+    }
+
+    function sendPost(url, body, callback) {
+        let r = new XMLHttpRequest();
+        r.open("POST", url, true);
+        r.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        r.send(body);
+        r.onreadystatechange = function() {
+            if(r.readyState === 4 && r.status === 200) {
+                const answer = r.responseText;
+                r = null;
+                callback(answer);
+            }
+        }
+    }
+
+    window.onload = function() {
+        if(localStorage.getItem("man_id") && localStorage.getItem("man_fio") && localStorage.getItem("man_school")) {
+            getElem("box1").innerHTML = "";
+            const buffer = [];
+            buffer.push("<b>Номер ученика: </b>" + localStorage.getItem("man_id"));
+            buffer.push("<b>ФИО ученика: </b>" + localStorage.getItem("man_fio"));
+            buffer.push("<b>Школа ученика: </b>" + localStorage.getItem("man_school"));
+            let content = "<p>" + buffer.join("<br>") + "</p>";
+            content = "<h2>Ученик</h2>" + content;
+            content = content + "<div align = 'center' class = 'btn' onclick = 'changeMan()'>Изменить данные</div>"
+            getElem("box1").innerHTML = content.toString();
+            getElem("box2").hidden = false;
+        }
+    }
+
+    function changeMan() {
+        localStorage.clear();
+        location.reload();
+    }
+
+    function sendCode() {
+        const man_id = localStorage.getItem("man_id");
+        const man_fio = localStorage.getItem("man_fio");
+        const man_school = localStorage.getItem("man_school");
+        const man_code = getElem("codeField").value;
+
+        const body = JSON.stringify({
+            man_id: man_id,
+            man_fio: man_fio,
+            man_school: man_school,
+            man_code: man_code,
+        });
+
+        sendPost('/api/answer/add', body, (answer) => {
+            const obj = JSON.parse(answer);
+            if(obj.result === "OK") {
+                getElem("box2").innerHTML = "<br>" + "<h2>OK</h2>"
+            } else {
+                getElem("box2").innerHTML = "<br>" + "<h2>ERROR</h2>"
+            }
+            getElem("box2").innerHTML += ("<div class = 'btn' onclick = 'location.reload()' align = 'center'>Обновить</div>");
+        });
+    }
+
+    function addMan() {
+        const fio = getElem('fioField').value;
+        const school = getElem('schoolField').value;
+        const body = JSON.stringify({
+            fio: fio,
+            school: school,
+        });
+        sendPost('/api/user/add', body, (answer) => {
+            const obj = JSON.parse(answer);
+            if(obj.result !== "ERROR_OF_ADDING_MAN") {
+                localStorage.clear();
+                localStorage.setItem("man_id", obj.man_id);
+                localStorage.setItem("man_fio", obj.man_fio);
+                localStorage.setItem("man_school", obj.man_school);
+                location.reload();
+            }
+        });
+    }
+</script>
+    
+</body>
+</html>

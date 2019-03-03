@@ -1,0 +1,21 @@
+{
+  "name": "exam-control",
+  "version": "1.2.3",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "prestart": "webpack",
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "Kolotovkin Maxim",
+  "license": "ISC",
+  "dependencies": {
+    "child_process": "^1.0.2",
+    "express": "^4.16.4",
+    "fs": "0.0.1-security",
+    "pg": "^6.1.0",
+    "webpack": "^3.6.0",
+    "webpack-node-externals": "^1.7.2"
+  }
+}
